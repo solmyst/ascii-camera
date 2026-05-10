@@ -127,9 +127,6 @@ let currentFps = 0;
 let rainDrops: number[] = [];
 let rainInitialized = false;
 
-// Previous frame for edge detection / trails
-let prevPixels: Uint8ClampedArray | null = null;
-
 // ═══════════════════════════════════════
 //  UTILITIES
 // ═══════════════════════════════════════
@@ -184,7 +181,6 @@ function stopCamera() {
   mainCtx.fillStyle = '#000';
   mainCtx.fillRect(0, 0, mainCanvas.width, mainCanvas.height);
   startScreen.style.display = 'flex';
-  prevPixels = null;
   rainInitialized = false;
   stopAudio();
 }
@@ -223,7 +219,7 @@ function stopAudio() {
 
 function updateAudioLevel() {
   if (!analyser || !audioData) return;
-  analyser.getByteFrequencyData(audioData);
+  analyser.getByteFrequencyData(audioData as any);
   let sum = 0;
   for (let i = 0; i < audioData.length; i++) sum += audioData[i];
   audioLevel = sum / audioData.length / 255; // 0-1
@@ -440,8 +436,6 @@ function renderLoop() {
       renderThermal(pixels, numCols, numRows, charW, charH, fontSize);
       break;
   }
-
-  prevPixels = new Uint8ClampedArray(pixels);
 }
 
 // ── Classic / Custom Text Mode ──
@@ -525,7 +519,6 @@ function renderMatrix(
       const charIdx = (y + dropY + Math.floor(Math.random() * 2)) % chars.length;
       const char = brightness > 30 ? chars[charIdx] : '.';
 
-      const greenVal = Math.floor(Math.min(255, brightness * alpha + 80));
       if (dist < 2) {
         mainCtx.fillStyle = `rgba(180, 255, 180, ${alpha})`;
       } else {
@@ -664,7 +657,6 @@ function renderThermal(
 function setMode(mode: RenderMode) {
   currentMode = mode;
   rainInitialized = false;
-  prevPixels = null;
   hudMode.textContent = `MODE: ${mode.toUpperCase()}`;
   customTextGroup.style.display = mode === 'custom' ? 'flex' : 'none';
   // Update button active states
