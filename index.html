@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ASCII CAM — Live Render Studio</title>
+    <meta name="description" content="Real-time ASCII art webcam renderer with multiple visual modes, audio reactivity, and color themes." />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <script type="module" crossorigin src="/ascii-camera/assets/index-CJl1IQ-Y.js"></script>
+    <link rel="stylesheet" crossorigin href="/ascii-camera/assets/index-BVitSPYk.css">
+  </head>
+  <body>
+    <div id="app">
+      <!-- Main ASCII Canvas -->
+      <canvas id="ascii-canvas"></canvas>
+
+      <!-- Hidden processing elements -->
+      <video id="video" autoplay playsinline style="display:none;"></video>
+      <canvas id="offscreen" style="display:none;"></canvas>
+
+      <!-- HUD Overlay -->
+      <div id="hud">
+        <div id="hud-top-left">
+          <span id="hud-mode">MODE: CLASSIC</span>
+          <span id="hud-theme">THEME: MATRIX</span>
+        </div>
+        <div id="hud-top-right">
+          <span id="hud-fps">0 FPS</span>
+          <span id="hud-resolution">0×0</span>
+        </div>
+        <div id="hud-bottom">
+          <span id="hud-hint">Press <kbd>H</kbd> for controls</span>
+        </div>
+      </div>
+
+      <!-- Audio Visualizer Bar -->
+      <div id="audio-bar"></div>
+
+      <!-- Start Screen -->
+      <div id="start-screen">
+        <div class="start-content">
+          <h1 class="glitch" data-text="ASCII CAM">ASCII CAM</h1>
+          <p class="subtitle">Real-time render studio</p>
+          <button id="startBtn">
+            <span class="btn-icon">▶</span>
+            Initialize Camera
+          </button>
+          <div class="features-grid">
+            <div class="feature"><span>🎨</span> 7 Render Modes</div>
+            <div class="feature"><span>🎤</span> Audio Reactive</div>
+            <div class="feature"><span>🌈</span> 5 Color Themes</div>
+            <div class="feature"><span>📸</span> Screenshot</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Controls Panel (toggled by H) -->
+      <div id="controls-panel" class="hidden">
+        <div class="panel-header">
+          <h2>Controls</h2>
+          <button id="closeControls" class="icon-btn">✕</button>
+        </div>
+        <div class="panel-body">
+          <div class="control-group">
+            <h3>Render Mode <kbd>M</kbd></h3>
+            <div class="mode-buttons" id="modeButtons">
+              <button data-mode="classic" class="active">Classic</button>
+              <button data-mode="matrix">Matrix Rain</button>
+              <button data-mode="edge">Edge Detect</button>
+              <button data-mode="emoji">Emoji</button>
+              <button data-mode="braille">Braille HD</button>
+              <button data-mode="custom">Custom Text</button>
+              <button data-mode="thermal">Thermal</button>
+            </div>
+          </div>
+          <div class="control-group" id="customTextGroup" style="display:none;">
+            <h3>Custom Text</h3>
+            <input type="text" id="customTextInput" placeholder="Type a word..." value="HELLO" maxlength="20" />
+          </div>
+          <div class="control-group">
+            <h3>Color Theme <kbd>T</kbd></h3>
+            <div class="theme-buttons" id="themeButtons">
+              <button data-theme="matrix" class="active"><span class="swatch" style="background:linear-gradient(135deg,#00ff41,#003300)"></span>Matrix</button>
+              <button data-theme="cyberpunk"><span class="swatch" style="background:linear-gradient(135deg,#ff00ff,#00ffff)"></span>Cyberpunk</button>
+              <button data-theme="vaporwave"><span class="swatch" style="background:linear-gradient(135deg,#ff6ec7,#7873f5)"></span>Vaporwave</button>
+              <button data-theme="fire"><span class="swatch" style="background:linear-gradient(135deg,#ff4500,#ffd700)"></span>Fire</button>
+              <button data-theme="mono"><span class="swatch" style="background:linear-gradient(135deg,#ffffff,#555555)"></span>Mono</button>
+            </div>
+          </div>
+          <div class="control-group">
+            <h3>Resolution <kbd>↑↓</kbd></h3>
+            <input type="range" id="resolutionSlider" min="1" max="100" value="70" />
+          </div>
+          <div class="control-group">
+            <h3>Effects</h3>
+            <label class="toggle-label">
+              <input type="checkbox" id="trailsToggle" /> Motion Trails <kbd>G</kbd>
+            </label>
+            <label class="toggle-label">
+              <input type="checkbox" id="audioToggle" /> Audio Reactive <kbd>A</kbd>
+            </label>
+            <label class="toggle-label">
+              <input type="checkbox" id="invertToggle" /> Invert <kbd>I</kbd>
+            </label>
+          </div>
+          <div class="control-group">
+            <h3>Actions</h3>
+            <button id="screenshotBtn" class="action-btn">📸 Screenshot <kbd>S</kbd></button>
+            <button id="stopBtn" class="action-btn danger">⏹ Stop Camera</button>
+          </div>
+          <div class="control-group shortcuts">
+            <h3>Shortcuts</h3>
+            <div class="shortcut-grid">
+              <span><kbd>M</kbd> Cycle Mode</span>
+              <span><kbd>T</kbd> Cycle Theme</span>
+              <span><kbd>G</kbd> Toggle Trails</span>
+              <span><kbd>A</kbd> Toggle Audio</span>
+              <span><kbd>I</kbd> Invert</span>
+              <span><kbd>S</kbd> Screenshot</span>
+              <span><kbd>↑/↓</kbd> Resolution</span>
+              <span><kbd>H</kbd> Toggle Panel</span>
+              <span><kbd>F</kbd> Fullscreen</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Toast notifications -->
+      <div id="toast-container"></div>
+
+      <!-- Error display -->
+      <div id="error-msg" class="error"></div>
+    </div>
+  </body>
+</html>
